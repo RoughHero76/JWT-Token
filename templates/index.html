@@ -1,19 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload and List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
 
+        .login-container {
+            margin: 0 auto;
+            width: 300px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .form-input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .form-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
 <body>
-    <div class="App">
-        <header class="App-header">
-            <img src="{{ url_for('static', filename='Octocat.png') }}" class="App-logo" alt="logo" />
-            <p>
-                GitHub Codespaces <span class="heart">♥️</span> Flask
-            </p>
-            <p class="small">
-                Edit <code>templates/index.html</code> and refresh to see your changes!
-            </p>
-        </header>
+    <div class="login-container" id="login-container">
+        <h1>Login</h1>
+        <form id="login-form">
+            <input class="form-input" type="text" id="username" placeholder="Username">
+            <input class="form-input" type="password" id="password" placeholder="Password">
+            <button class="form-button" type="submit">Login</button>
+        </form>
     </div>
-</body>
+    <div class="upload-container" id="upload-container" style="display: none;">
+        <h1>Image Upload and List</h1>
+        <form id="upload-form" enctype="multipart/form-data">
+            <input type="file" name="file" id="file-input">
+            <button type="submit">Upload Image</button>
+        </form>
+        <h2>Uploaded Images:</h2>
+        <ul id="image-list"></ul>
+    </div>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const loginContainer = document.getElementById("login-container");
+            const uploadContainer = document.getElementById("upload-container");
+            const loginForm = document.getElementById("login-form");
+            const uploadForm = document.getElementById("upload-form");
+            const fileInput = document.getElementById("file-input");
+            const imageList = document.getElementById("image-list");
+
+            // Function to list uploaded images
+            function listImages() {
+                fetch("/list_uploaded_images")
+                    .then((response) => response.json())
+                    .then((data) => {
+                        imageList.innerHTML = "";
+                        data.uploaded_images.forEach((imageName) => {
+                            const listItem = document.createElement("li");
+                            listItem.textContent = imageName;
+                            imageList.appendChild(listItem);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error("Error listing images:", error);
+                    });
+            }
+
+            // Event listener for login form submission
+            loginForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const username = document.getElementById("username").value;
+                const password = document.getElementById("password").value;
+                const authPayload = {
+                    username: username,
+                    password: password,
+                };
+
+                // Send a POST request for authentication
+                fetch("/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(authPayload),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.access_token) {
+                            localStorage.setItem("access_token", data.access_token);
+                            loginContainer.style.display = "none";
+                            uploadContainer.style.display = "block";
+                            listImages(); // Refresh the list of uploaded images
+                        } else {
+                            alert("Authentication failed");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error authenticating:", error);
+                    });
+            });
+
+            // Event listener for form submission
+            uploadForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const formData = new FormData(uploadForm);
+                fetch("/upload", {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                            "access_token"
+                        )}`,
+                    },
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        console.log(data.message);
+                        listImages(); // Refresh the list of uploaded images
+                    })
+                    .catch((error) => {
+                        console.error("Error uploading image:", error);
+                    });
+            });
+
+            // Initial list of uploaded images if authenticated
+            if (localStorage.getItem("access_token")) {
+                loginContainer.style.display = "none";
+                uploadContainer.style.display = "block";
+                listImages(); // Refresh
+            }
+        });
+    </script>
+</body>
 </html>
