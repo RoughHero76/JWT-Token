@@ -73,19 +73,37 @@
 
             // Function to list uploaded images
             function listImages() {
-                fetch("/list_uploaded_images")
-                    .then((response) => response.json())
-                    .then((data) => {
-                        imageList.innerHTML = "";
-                        data.uploaded_images.forEach((imageName) => {
-                            const listItem = document.createElement("li");
-                            listItem.textContent = imageName;
-                            imageList.appendChild(listItem);
-                        });
+                const token = localStorage.getItem("access_token");
+
+                if (token) {
+                    fetch("/list_uploaded_images", {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
                     })
-                    .catch((error) => {
-                        console.error("Error listing images:", error);
-                    });
+                        .then((response) => {
+                            if (response.status === 401) {
+                                // Unauthorized, clear token and show login container
+                                localStorage.removeItem("access_token");
+                                loginContainer.style.display = "block";
+                                uploadContainer.style.display = "none";
+                                alert("Session expired. Please log in again.");
+                            }
+                            return response.json();
+                        })
+                        .then((data) => {
+                            imageList.innerHTML = "";
+                            data.uploaded_images.forEach((imageName) => {
+                                const listItem = document.createElement("li");
+                                listItem.textContent = imageName;
+                                imageList.appendChild(listItem);
+                            });
+                        })
+                        .catch((error) => {
+                            console.error("Error listing images:", error);
+                        });
+                }
             }
 
             // Event listener for login form submission
