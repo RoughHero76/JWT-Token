@@ -11,7 +11,8 @@ app.config['JWT_SECRET_KEY'] = 'your-secret-key'
 jwt = JWTManager(app)
 
 limiter = Limiter(
-    app, 
+    get_remote_address,
+    app=app, 
     default_limits=["5 per minute"]
 )
 
@@ -63,7 +64,7 @@ def uploaded_file(filename):
 
 @app.route('/list_uploaded_images')
 @jwt_required()
-@limiter.request_filter
+#@limiter.request_filter
 def list_uploaded_images():
     uploaded_images = os.listdir(app.config['UPLOAD_FOLDER'])
     return jsonify(uploaded_images=uploaded_images)
