@@ -62,6 +62,7 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/list_uploaded_images')
+@jwt_required()
 @limiter.request_filter
 def list_uploaded_images():
     uploaded_images = os.listdir(app.config['UPLOAD_FOLDER'])
