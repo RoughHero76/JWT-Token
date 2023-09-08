@@ -11,9 +11,8 @@ app.config['JWT_SECRET_KEY'] = 'your-secret-key'
 jwt = JWTManager(app)
 
 limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["20 per minute"]
+    app, 
+    default_limits=["5 per minute"]
 )
 
 UPLOAD_FOLDER = 'uploads'
