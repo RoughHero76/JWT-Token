@@ -64,7 +64,7 @@ def uploaded_file(filename):
 
 @app.route('/list_uploaded_images')
 @jwt_required()
-@limiter.request_filter
+#@limiter.request_filter
 def list_uploaded_images():
     uploaded_images = os.listdir(app.config['UPLOAD_FOLDER'])
     return jsonify(uploaded_images=uploaded_images)
