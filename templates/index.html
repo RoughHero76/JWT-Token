@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Upload and List</title>
     <style>
+        /* Add your CSS styles here */
         body {
             font-family: Arial, sans-serif;
             text-align: center;
@@ -140,8 +141,12 @@
                         } else {
                             // Handle the error case
                             return response.text().then((errorMessage) => {
+                                // Remove the token from local storage
+                                localStorage.removeItem("access_token");
                                 // Display an alert with the error message
                                 alert("Error: " + errorMessage);
+                                // Refresh the page to reflect the updated authentication state
+                                window.location.reload();
                                 throw new Error(errorMessage);
                             });
                         }
