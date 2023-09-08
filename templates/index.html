@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,6 +41,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-container" id="login-container">
         <h1>Login</h1>
@@ -52,7 +54,7 @@
     <div class="upload-container" id="upload-container" style="display: none;">
         <h1>Image Upload and List</h1>
         <form id="upload-form" enctype="multipart/form-data">
-            <input type="file" name="file" id="file-input">
+            <input type="file" name="file" id="file-input" accept="image/*" required>
             <button type="submit">Upload Image</button>
         </form>
         <h2>Uploaded Images:</h2>
@@ -132,16 +134,28 @@
                         )}`,
                     },
                 })
-                    .then((response) => response.json())
+                    .then((response) => {
+                        if (response.status === 200) {
+                            return response.json();
+                        } else {
+                            // Handle the error case
+                            return response.text().then((errorMessage) => {
+                                // Display an alert with the error message
+                                alert("Error: " + errorMessage);
+                                throw new Error(errorMessage);
+                            });
+                        }
+                    })
                     .then((data) => {
-                        console.log(data.message);
-                        listImages(); // Refresh the list of uploaded images
+                        if (data.message) {
+                            console.log(data.message);
+                            listImages(); // Refresh the list of uploaded images
+                        }
                     })
                     .catch((error) => {
                         console.error("Error uploading image:", error);
                     });
             });
-
             // Initial list of uploaded images if authenticated
             if (localStorage.getItem("access_token")) {
                 loginContainer.style.display = "none";
@@ -151,4 +165,5 @@
         });
     </script>
 </body>
+
 </html>
